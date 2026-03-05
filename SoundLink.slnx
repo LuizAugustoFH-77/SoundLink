@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SoundLink.Core/SoundLink.Core.csproj" />
+    <Project Path="src/SoundLink.Desktop/SoundLink.Desktop.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,278 @@
+﻿<Window x:Class="SoundLink.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:SoundLink.Desktop.ViewModels"
+        xmlns:local="clr-namespace:SoundLink.Desktop"
+        mc:Ignorable="d"
+        Title="SoundLink" Height="580" Width="440"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Background="#1E1E1E">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- Dark theme colors -->
+        <SolidColorBrush x:Key="BgPrimary" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="BgCard" Color="#2D2D2D"/>
+        <SolidColorBrush x:Key="BgCardHover" Color="#383838"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#82B1FF"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#69F0AE"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#FF5252"/>
+        <SolidColorBrush x:Key="AccentOrange" Color="#FFD740"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#B0B0B0"/>
+        <SolidColorBrush x:Key="TextDim" Color="#707070"/>
+
+        <BooleanToVisibilityConverter x:Key="BoolVis"/>
+        <local:InvertBoolConverter x:Key="InvertBool"/>
+        <local:InvertBoolToVisConverter x:Key="InvertBoolToVis"/>
+        <local:LatencyToBoolConverter x:Key="LatencyToBool"/>
+
+        <!-- Modern rounded button style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBlue}"/>
+            <Setter Property="Foreground" Value="#1E1E1E"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#AACCFF"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="{StaticResource AccentRed}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF7777"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Background" Value="{StaticResource BgCardHover}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <!-- Card panel style -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource BgCard}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="🔊 SoundLink" FontSize="24" FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimary}"/>
+            <TextBlock Text="Stream PC audio to your phone"
+                       Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Status + PIN Card -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Status indicator -->
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Ellipse Width="10" Height="10" Margin="0,0,8,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource AccentRed}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsStreaming}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource AccentGreen}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource AccentOrange}"/>
+                                    </DataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsRunning}" Value="True"/>
+                                            <Condition Binding="{Binding IsStreaming}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Fill" Value="{StaticResource AccentGreen}"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource TextPrimary}"
+                               FontSize="14" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- PIN display -->
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,4,0,0">
+                    <TextBlock Text="PAIRING PIN" Foreground="{StaticResource TextDim}"
+                               FontSize="10" FontWeight="Bold" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding PinDisplay}" FontSize="32" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBlue}" FontFamily="Consolas"/>
+                </StackPanel>
+
+                <Button Grid.Row="1" Grid.Column="1" Content="New PIN"
+                        Style="{StaticResource SmallButton}"
+                        Command="{Binding RegeneratePinCommand}"
+                        IsEnabled="{Binding IsRunning}"
+                        VerticalAlignment="Bottom" Margin="8,0,0,0"/>
+
+                <!-- Latency -->
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal"
+                            Margin="0,10,0,0"
+                            Visibility="{Binding IsConnected, Converter={StaticResource BoolVis}}">
+                    <TextBlock Text="Latency: " Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                    <TextBlock FontSize="12" FontWeight="Bold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{Binding LatencyMs, StringFormat={}{0}ms}"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding LatencyMs, Converter={StaticResource LatencyToBool}}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource AccentRed}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="  |  Device: " Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                    <TextBlock Text="{Binding ConnectedDevice}" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Settings Card -->
+        <Border Grid.Row="2" Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="SETTINGS" Foreground="{StaticResource TextDim}"
+                           FontSize="10" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <!-- Audio Device -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Audio Device" Foreground="{StaticResource TextSecondary}"
+                               FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding AudioDevices}"
+                              SelectedValuePath="Id" SelectedValue="{Binding SelectedDeviceId}"
+                              DisplayMemberPath="Name"
+                              IsEnabled="{Binding IsRunning, Converter={StaticResource InvertBool}}"
+                              FontSize="11" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="↻" Style="{StaticResource SmallButton}"
+                            Command="{Binding RefreshDevicesCommand}"
+                            Padding="8,4" Margin="6,0,0,0"/>
+                </Grid>
+
+                <!-- Bitrate -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Bitrate" Foreground="{StaticResource TextSecondary}"
+                               FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Slider Grid.Column="1" Minimum="64" Maximum="256"
+                            Value="{Binding Bitrate}" TickFrequency="32"
+                            IsSnapToTickEnabled="True"
+                            IsEnabled="{Binding IsRunning, Converter={StaticResource InvertBool}}"
+                            VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Foreground="{StaticResource TextPrimary}"
+                               FontSize="12" VerticalAlignment="Center" Margin="10,0,0,0">
+                        <TextBlock.Text>
+                            <Binding Path="Bitrate" StringFormat="{}{0} kbps"/>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Grid>
+
+                <!-- USB toggle -->
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <CheckBox IsChecked="{Binding UsbEnabled}" VerticalAlignment="Center"
+                              IsEnabled="{Binding IsRunning, Converter={StaticResource InvertBool}}"/>
+                    <TextBlock Text="Enable USB (ADB) connection" Foreground="{StaticResource TextSecondary}"
+                               FontSize="12" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Start/Stop buttons -->
+        <Grid Grid.Row="3" Margin="0,0,0,12">
+            <Button Content="▶  Start Server" Style="{StaticResource ModernButton}"
+                    Command="{Binding StartServerCommand}" HorizontalAlignment="Stretch"
+                    Visibility="{Binding IsRunning, Converter={StaticResource InvertBoolToVis}}"/>
+            <Button Content="■  Stop Server" Style="{StaticResource DangerButton}"
+                    Command="{Binding StopServerCommand}" HorizontalAlignment="Stretch"
+                    Visibility="{Binding IsRunning, Converter={StaticResource BoolVis}}"/>
+        </Grid>
+
+        <!-- Log -->
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="LOG" Foreground="{StaticResource TextDim}"
+                           FontSize="10" FontWeight="Bold" Margin="4,0,0,6"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding LogEntries}"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="{StaticResource TextSecondary}"
+                         FontFamily="Consolas" FontSize="10"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+            </Grid>
+        </Border>
+
+        <!-- Footer -->
+        <TextBlock Grid.Row="5" Text="SoundLink v1.0 — Ctrl+M to minimize to tray"
+                   Foreground="{StaticResource TextDim}" FontSize="10"
+                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+    </Grid>
+</Window>
